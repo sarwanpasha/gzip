@@ -94,6 +94,10 @@ def main():
     df = pd.read_csv(p(cfg, "data", "processed", a.ds, "sequences.csv"))
     seqs = df["sequence"].astype(str).tolist()
     od = ensure_dir(p(cfg, "data", "emb", a.ds))
+    mark = od / (a.model + ".running")
+    if a.device == "cuda" and ((od / (a.model + ".npy")).exists() or mark.exists()):
+        log("skip", a.ds, a.model); return
+    if a.device == "cuda": mark.touch()
     if a.device == "cuda" and os.environ.get("CUDA_VISIBLE_DEVICES") is None:
         os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     if a.device == "cpu":

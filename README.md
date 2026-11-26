@@ -49,7 +49,7 @@ NCD to each training sequence and projecting.
 | Compression-based | Gzip, Bz2, LZMA + kernel PCA |
 | Foundation models (frozen, mean-pooled) | ESM-2 650M and ProtT5-XL-U50 for proteins; Nucleotide Transformer v2-500M for DNA |
 | Simple baselines | sequence length; residue composition (and GC content); 3-mer spectrum; compressed length |
-| Ablations | k-NN directly on NCD; distance profile without PCA; linear PCA; kernel applied elementwise to distances |
+| Ablations | k-NN directly on NCD; distance profile without PCA; linear PCA; kernel applied elementwise to distances; transductive variant (elementwise kernel, kernel PCA fitted on all sequences before splitting) |
 | Controls | shuffled training labels; residue-shuffled sequences (composition preserved); random Gaussian features; label-permutation null distribution |
 
 Cost is also measured: CPU time of all compression calls, peak memory, time to embed one new
@@ -82,7 +82,8 @@ Put the input files in `data/raw/` and describe them in `config.json`. Supported
 
 Each dataset entry also needs `"alphabet": "dna"` or `"protein"`.
 
-The Human DNA dataset is public and is downloaded by `setup_cpu.sh`.
+The default `config.json` expects `data/raw/human_dna.csv`, `data/raw/coronavirus_host.csv` and
+`data/raw/spike7k.csv`. The Human DNA dataset is public and is downloaded by `setup_cpu.sh`.
 Sequences obtained from GISAID cannot be redistributed and are not included here;
 download them from [GISAID](https://gisaid.org) under its terms of use.
 

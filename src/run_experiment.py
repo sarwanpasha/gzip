@@ -111,6 +111,13 @@ def main():
         cm["direct_kernel_min_eig_centered"] = dk.min_eig_centered
         cm["direct_kernel_min_eig_raw"] = dk.min_eig_raw
         special_nn[f"{comp}+kNN-NCD"] = (phi["test"], phi["val"])
+        # transductive variant: elementwise kernel exp(-D'^2 / 2) and kernel PCA (500 components)
+        # fitted on ALL sequences (train + validation + test, no labels) before splitting
+        from sklearn.decomposition import KernelPCA
+        Kall = np.exp(-(np.asarray(D, dtype=np.float64) ** 2) / 2.0)
+        Zall = KernelPCA(n_components=min(500, max(2, len(df) // 4)), kernel="precomputed", random_state=0).fit_transform(Kall)
+        reps[f"{comp}+KPCA-transductive"] = (Zall[sp["train"]], Zall[sp["val"]], Zall[sp["test"]], "transductive")
+        del Kall, Zall
         # controls
         perm = rng.permutation(len(sp["train"]))
         reps[f"{comp}+KPCA [shuffled labels]"] = (rk.Z_tr, Zva, Zte, "control_labels", perm)

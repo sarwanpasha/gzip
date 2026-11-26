@@ -10,7 +10,7 @@ from common import ensure_dir, load_config, p, read_json
 
 NICE = {"human_dna": "Human DNA", "coronavirus_host": "Coronavirus Host", "spike7k": "Spike7k"}
 FAM_ORDER = {"ours": 0, "foundation": 1, "simple": 2, "ablation": 3, "control_labels": 4,
-             "control_residues": 5, "control_random": 6}
+             "control_residues": 5, "control_random": 6, "transductive": 7}
 CLF_ORDER = ["SVM", "NB", "MLP", "KNN", "RF", "LR", "DT", "kNN-NCD"]
 
 
@@ -212,8 +212,8 @@ def main():
     S = pd.read_csv(sd / "summary.csv")
     B = pd.read_csv(sd / "best_by_validation.csv")
     main_tables(S, od)
-    best_table(B, od, ["ours", "ablation"], "ablations.tex",
-               "Ablation of the representation pipeline (best classifier per row selected on validation). dist: NCD distance profile to the training sequences used directly; PCA: linear PCA of the profile; KPCA: Gaussian kernel on profiles + kernel PCA (proposed); KPCA-direct: Gaussian applied elementwise to NCD distances; kNN-NCD: nearest neighbours on NCD.",
+    best_table(B, od, ["ours", "ablation", "transductive"], "ablations.tex",
+               "Ablation of the representation pipeline (best classifier per row selected on validation). dist: NCD distance profile to the training sequences used directly; PCA: linear PCA of the profile; KPCA: Gaussian kernel on profiles + kernel PCA (proposed); KPCA-direct: Gaussian applied elementwise to NCD distances; kNN-NCD: nearest neighbours on NCD; KPCA-transductive: elementwise kernel with fixed bandwidth and kernel PCA (500 components) fitted on all sequences before splitting.",
                "tbl_ablation")
     best_table(B[B.scheme != "random"], od, ["ours", "foundation", "simple"], "cluster_results.tex",
                "Results under cluster-disjoint splits for all representations (best classifier per row selected on validation).",

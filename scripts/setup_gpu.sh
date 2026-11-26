@@ -4,7 +4,10 @@
 set -euo pipefail
 W=$(cd "$(dirname "$0")/.." && pwd)
 CONDA=${CONDA:-$HOME/anaconda3/bin/conda}
-[ -d $W/env ] || $CONDA create -y -p $W/env python=3.9 numpy pandas
+export XDG_CACHE_HOME=$W/tools/cache PIP_CACHE_DIR=$W/tools/pipcache
+# conda env if possible, otherwise a plain virtual environment (Python 3.8-3.10)
+[ -d $W/env ] || $CONDA create -y -p $W/env python=3.9 pip || ${PYTHON:-$(dirname $CONDA)/python} -m venv $W/env
+$W/env/bin/pip install -U pip numpy pandas
 $W/env/bin/pip install --no-cache-dir torch==1.12.1+cu113 --extra-index-url https://download.pytorch.org/whl/cu113
 $W/env/bin/pip install --no-cache-dir "transformers==4.33.3" sentencepiece "protobuf<4"
 export HF_HOME=$W/tools/hf

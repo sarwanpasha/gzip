@@ -37,7 +37,7 @@ NCD to each training sequence and projecting.
 - **Model selection.** Kernel bandwidth, number of components, and classifier hyperparameters are
   chosen by validation macro-F1. The test partition is used only for the final numbers.
 - **Metrics.** Accuracy; support-weighted precision, recall and F1; macro precision, recall and F1;
-  ROC-AUC (one-vs-rest, macro-averaged, from predicted probabilities).
+  ROC-AUC (one-vs-rest, macro-averaged, from predicted probabilities; decision values for the SVM).
 - **Statistics.** Mean, standard deviation and 95% confidence interval per configuration.
   Paired t-test and Wilcoxon signed-rank test between the best compression-based configuration and
   each baseline, with mean difference, confidence interval, Cohen's d_z, and Holm correction.

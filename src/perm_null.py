@@ -41,7 +41,7 @@ def main():
     def run(labels, seed):
         m = C.make(best.classifier, params, seed).fit(rk.Z_tr, labels)
         pr = m.predict(Zte)
-        return C.metrics(yte, pr, m.predict_proba(Zte), m.classes_)
+        return C.metrics(yte, pr, C.scores(m, Zte), m.classes_)
 
     obs = run(ytr, 0)
     rng = np.random.default_rng(123)

@@ -7,6 +7,7 @@ Metrics (all computed on the held-out test partition):
   precision/recall/F1 'macro'    : unweighted mean over classes present in y_true or y_pred
   ROC-AUC                        : one-vs-rest, macro-averaged over classes that occur in the test
                                    set and in training, computed from predicted class probabilities
+                                   (one-vs-rest decision values for the SVM)
 Model selection: for every classifier, the hyperparameter setting with the best validation
 macro-F1 is chosen; that model (trained on the training partition only) is evaluated on test.
 """
@@ -44,7 +45,7 @@ GRIDS = {
 
 def make(name, params, seed):
     if name == "SVM":
-        m = SVC(kernel="rbf", probability=True, random_state=seed, **params)
+        m = SVC(kernel="rbf", decision_function_shape="ovr", random_state=seed, **params)
     elif name == "NB":
         return GaussianNB(**params)
     elif name == "MLP":
@@ -86,6 +87,14 @@ def metrics(y_true, y_pred, proba=None, classes=None):
     return out
 
 
+def scores(model, X):
+    """Class scores for ROC-AUC: predicted probabilities, or one-vs-rest decision values (SVM)."""
+    if hasattr(model, "predict_proba"):
+        return model.predict_proba(X)
+    d = model.decision_function(X)
+    return np.c_[-d, d] if d.ndim == 1 else d
+
+
 def fit_select(name, Xtr, ytr, Xva, yva, seed):
     grid = GRIDS[name]
     keys = list(grid)
@@ -108,7 +117,7 @@ def evaluate(name, Xtr, ytr, Xva, yva, Xte, yte, seed):
     val_f1, params, model, train_s = fit_select(name, Xtr, ytr, Xva, yva, seed)
     t = time.perf_counter()
     pred = model.predict(Xte)
-    proba = model.predict_proba(Xte) if hasattr(model, "predict_proba") else None
+    proba = scores(model, Xte)
     pred_s = time.perf_counter() - t
     res = metrics(yte, pred, proba, model.classes_)
     val_acc = accuracy_score(yva, model.predict(Xva)) if len(yva) else float("nan")

@@ -213,7 +213,7 @@ def main():
     B = pd.read_csv(sd / "best_by_validation.csv")
     main_tables(S, od)
     best_table(B, od, ["ours", "ablation", "transductive"], "ablations.tex",
-               "Ablation of the representation pipeline (best classifier per row selected on validation). dist: NCD distance profile to the training sequences used directly; PCA: linear PCA of the profile; KPCA: Gaussian kernel on profiles + kernel PCA (proposed); KPCA-direct: Gaussian applied elementwise to NCD distances; kNN-NCD: nearest neighbours on NCD; KPCA-transductive: elementwise kernel with fixed bandwidth and kernel PCA (500 components) fitted on all sequences before splitting.",
+               "Ablation of the representation pipeline (best classifier per row selected on validation). dist: NCD distance profile to the training sequences used directly; PCA: linear PCA of the profile; KPCA: Gaussian kernel on profiles + kernel PCA (proposed); KPCA-direct: Gaussian applied elementwise to NCD distances; kNN-NCD: nearest neighbours on NCD; KPCA-elementwise500: elementwise kernel with fixed bandwidth and 500 components, fitted on training sequences; KPCA-transductive: the same but fitted on all sequences before splitting.",
                "tbl_ablation")
     best_table(B[B.scheme != "random"], od, ["ours", "foundation", "simple"], "cluster_results.tex",
                "Results under cluster-disjoint splits for all representations (best classifier per row selected on validation).",

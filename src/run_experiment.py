@@ -118,6 +118,12 @@ def main():
         Zall = KernelPCA(n_components=min(500, max(2, len(df) // 4)), kernel="precomputed", random_state=0).fit_transform(Kall)
         reps[f"{comp}+KPCA-transductive"] = (Zall[sp["train"]], Zall[sp["val"]], Zall[sp["test"]], "transductive")
         del Kall, Zall
+        # same elementwise kernel and 500 components, but fitted on the training partition only
+        # (isolates the effect of fitting on all sequences)
+        kp = KernelPCA(n_components=min(500, max(2, len(sp["train"]) // 4)), kernel="precomputed", random_state=0)
+        Ztr = kp.fit_transform(np.exp(-(phi["train"] ** 2) / 2.0))
+        reps[f"{comp}+KPCA-elementwise500"] = (Ztr, kp.transform(np.exp(-(phi["val"] ** 2) / 2.0)),
+                                               kp.transform(np.exp(-(phi["test"] ** 2) / 2.0)), "ablation")
         # controls
         perm = rng.permutation(len(sp["train"]))
         reps[f"{comp}+KPCA [shuffled labels]"] = (rk.Z_tr, Zva, Zte, "control_labels", perm)

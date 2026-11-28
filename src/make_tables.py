@@ -8,7 +8,7 @@ import pandas as pd
 
 from common import ensure_dir, load_config, p, read_json
 
-NICE = {"human_dna": "Human DNA", "coronavirus_host": "Coronavirus Host", "spike7k": "Spike7k"}
+NICE = {"human_dna": "Human DNA", "coronavirus_host": "Coronavirus Host", "spike7k": "Spike7k", "gisaid_spike": "GISAID spike"}
 FAM_ORDER = {"ours": 0, "foundation": 1, "simple": 2, "ablation": 3, "control_labels": 4,
              "control_residues": 5, "control_random": 6, "transductive": 7}
 CLF_ORDER = ["SVM", "NB", "MLP", "KNN", "RF", "LR", "DT", "kNN-NCD"]
@@ -26,6 +26,8 @@ def ms(r, m, nd=3):
 
 
 def scheme_name(s):
+    if s == "temporal":
+        return "date-based split"
     return "random split" if s == "random" else f"cluster-disjoint, {float(s.replace('cluster_id', '')) * 100:.0f}\\% identity"
 
 

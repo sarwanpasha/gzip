@@ -141,6 +141,9 @@ def main():
     cfg = load_config(a.config)
     fr = cfg["split_fractions"]
     for ds in a.datasets or cfg["datasets"]:
+        if cfg["datasets"][ds].get("custom_splits"):
+            log(ds, "has its own splits (see gisaid_prepare.py); skipped")
+            continue
         df = pd.read_csv(p(cfg, "data", "processed", ds, "sequences.csv"))
         labels = df["label"].astype(str).to_numpy()
         base = ensure_dir(p(cfg, "data", "splits", ds))

@@ -12,6 +12,11 @@ def main():
     cfg = load_config(a.config)
     tasks, skipped = [], []
     for ds in cfg["datasets"]:
+        if "schemes" in cfg["datasets"][ds]:  # datasets with their own split schemes
+            for s in cfg["datasets"][ds]["schemes"]:
+                for k in range(cfg["n_seeds"]):
+                    tasks.append(f"{ds} {s} {k}")
+            continue
         schemes = ["random"]
         for d in sorted(p(cfg, "data", "splits", ds).glob("cluster_id*")):
             st = d / "cluster_stats.json"

@@ -15,6 +15,17 @@
       "alphabet": "protein",
       "raw": "data/raw/spike7k.csv",
       "format": "csv"
+    },
+    "gisaid_spike": {
+      "alphabet": "protein",
+      "raw": "data/raw/gisaid_spike.csv",
+      "format": "csv",
+      "custom_splits": true,
+      "schemes": [
+        "random",
+        "temporal"
+      ],
+      "transductive": false
     }
   },
   "compressors": [

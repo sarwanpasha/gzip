@@ -87,6 +87,37 @@ The default `config.json` expects `data/raw/human_dna.csv`, `data/raw/coronaviru
 Sequences obtained from GISAID cannot be redistributed and are not included here;
 download them from [GISAID](https://gisaid.org) under its terms of use.
 
+### GISAID spike benchmark with a date-based split
+
+SARS-CoV-2 spike proteins are almost all more than 99% identical, so cluster-disjoint splits are
+not possible for them. `src/gisaid_prepare.py` builds a lineage-classification benchmark in which
+the test sequences of every lineage were collected later than its training sequences:
+
+1. keep human-host records with a complete collection date and a lineage label;
+2. keep sequences of 1260 to 1280 residues made only of the 20 standard amino acids;
+3. keep each distinct sequence once (earliest date) and drop sequences listed under more than
+   one lineage;
+4. take the 20 lineages with the most distinct sequences and draw 750 sequences from each;
+5. for each run, draw 500 of these per lineage and split them by date (earliest 60% train,
+   next 10% validation, latest 30% test), and also at random within each lineage (same sequences),
+   so the two splits are directly comparable.
+
+Inputs: the GISAID spike protein FASTA ("spikeprot" download; header fields
+`Spike|name|collection date|accession|...|host|...`) and a CSV without header whose first two
+columns are accession and Pango lineage.
+
+```bash
+cd src
+python gisaid_prepare.py --fasta ../data/raw_gisaid/spikeprot.fasta --labels ../data/raw_gisaid/lineages.csv
+python data.py --datasets gisaid_spike
+cd .. && GZ_DATASETS=gisaid_spike bash scripts/run.sh ncd     # then fmgpu, exp
+```
+
+`data/raw/gisaid_spike_prepare_report.json` records the number of sequences removed by each
+filter, the chosen lineages and their date ranges; each split file records how many lineages have
+all test sequences collected on or after their latest training sequence. The prepared files and
+GISAID accession lists stay local and are not part of this repository.
+
 ## Running
 
 Every stage runs in its own `tmux` session named `gzip_*`, and writes a log to `logs/`.
@@ -102,6 +133,7 @@ bash scripts/run.sh post      # statistics, permutation null, timing, LaTeX tabl
 bash scripts/run.sh status    # sessions and last log line of each
 ```
 
+`GZ_DATASETS="a b"` restricts any subcommand to some datasets.
 Parallelism is set with `NCD_PROCS`, `EXP_WORKERS` and `EXP_THREADS`
 (for example `NCD_PROCS=8 bash scripts/run.sh ncd`).
 If embeddings are computed on another machine, copy `data/emb/` back before `exp`.
@@ -128,6 +160,7 @@ results/tables/                          LaTeX tables generated from the files a
 |---|---|
 | `src/data.py` | load raw data, write common format and dataset report |
 | `src/splits.py` | random and cluster-disjoint splits with statistics |
+| `src/gisaid_prepare.py` | GISAID spike benchmark: filtering, deduplication, date-based splits |
 | `src/ncd.py` | compressed lengths and all-pairs NCD |
 | `src/features.py` | distance profiles, kernel PCA, ablations, simple baselines |
 | `src/classify.py` | classifiers, hyperparameter grids, metrics |

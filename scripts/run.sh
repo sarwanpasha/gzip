@@ -13,7 +13,8 @@ EXP_WORKERS=${EXP_WORKERS:-6} # parallel experiment sessions
 EXP_THREADS=${EXP_THREADS:-4} # threads per experiment session (BLAS + random forest)
 ENVV="export HF_HOME=$W/tools/hf PYTHONDONTWRITEBYTECODE=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PATH=$W/env/bin:\$PATH; cd $W/src"
 PY=$W/env/bin/python
-DATASETS=$($PY -c "import json;print(' '.join(json.load(open('$W/config.json'))['datasets']))")
+# GZ_DATASETS="a b" restricts every subcommand to those datasets (default: all in config.json)
+DATASETS=${GZ_DATASETS:-$($PY -c "import json;print(' '.join(json.load(open('$W/config.json'))['datasets']))")}
 
 launch() {  # launch <session> <commands>: writes logs/<session>.sh and runs it in tmux
   local s=$1; shift
@@ -32,8 +33,9 @@ launch() {  # launch <session> <commands>: writes logs/<session>.sh and runs it 
 
 case "${1:-}" in
 prepare)
+  DSA=$(echo $DATASETS)
   CX="for ds in $DATASETS; do for c in gzip bz2 lzma; do for v in original shuffled; do python ncd.py cx --ds \$ds --comp \$c --variant \$v; done; done; done"
-  launch gzip_prepare "python data.py && python splits.py && $CX && echo PREPARE_DONE" ;;
+  launch gzip_prepare "python data.py --datasets $DSA && python splits.py --datasets $DSA && $CX && echo PREPARE_DONE" ;;
 ncd)
   for ds in $DATASETS; do
     N=$(cd $W/src && $PY ncd.py nchunks --ds $ds)

@@ -28,6 +28,7 @@ Outputs
 """
 import argparse
 import csv
+import datetime
 import re
 from collections import defaultdict
 
@@ -39,6 +40,17 @@ from splits import split_stats
 
 AA = re.compile(r"^[ACDEFGHIKLMNPQRSTVWY]+$")
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def valid_date(d):
+    """Complete, real calendar date (GISAID uses e.g. 2021-03 or 2021-00-00 for partial dates)."""
+    if not DATE.match(d):
+        return False
+    try:
+        datetime.date.fromisoformat(d)
+        return True
+    except ValueError:
+        return False
 
 
 def read_fasta(path):
@@ -108,7 +120,7 @@ def main():
         if host.lower() != "human":
             cnt["non_human_host"] += 1
             continue
-        if not DATE.match(date):
+        if not valid_date(date):
             cnt["incomplete_date"] += 1
             continue
         s = s.upper().rstrip("*")
@@ -139,7 +151,8 @@ def main():
     chosen = [k for n, k in sizes[:a.n_lineages] if n >= a.pool]
     rep["distinct_sequences_per_lineage_top40"] = {k: n for n, k in sizes[:40]}
     rep["chosen_lineages"] = chosen
-    log("chosen", len(chosen), chosen)
+    log("chosen", len(chosen), [(k, len(by_lin[k])) for k in chosen])
+    log("top lineages by distinct sequences", sizes[:30])
 
     rng = np.random.default_rng(0)
     rows = []
